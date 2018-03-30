@@ -79,7 +79,27 @@
   ]);
   ```
 ## Expressions Overview
+  
+  view the video for this course [here](https://www.youtube.com/watch?time_continue=21&v=n1-buqH9sUU)
+  You can view a complete list of expressions on the MongoDB site. There are quite a few matamatical expressions
+  you can find, as well as string, text, array and case expressions... etc.
+
+  [resources](https://docs.mongodb.com/manual/meta/aggregation-quick-reference/)
+
 ## Reshapping Documents in $project Stages
+  ```
+  db.companies.aggregate([
+    { $match: {"funding_rounds.investments.financial_org.permalink": "greylock" }},
+    { $project: {
+      _id: 0,
+      name: 1,
+      ipo: "$ipo.pub_year",
+      valuation: "$ipo.valuation_amount",
+      funders: "$funding_rounds.investments.financial_org.permalink"
+      }
+    }
+  ])
+  ```
 ## Introduction to $group
 ## _id in $group Stages
 ## $group vs $project
