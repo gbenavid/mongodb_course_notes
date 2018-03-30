@@ -19,6 +19,65 @@
   Its not uncommon that you would like to include the same type of stage multiple times
   within a single pipeline.
 ## Familiar Aggregation Operations
+  * **Match**: similar to find
+  a basic example of match query
+  ```
+  db.companies.aggregate([
+    { $match: {founded_year: 2004 }}
+  ])
+  ``` 
+  
+  * **Project**: define the things that you will project as output.
+  ```
+  db.companies.aggregate([
+    {$match: { founded_year: 2004 }},
+    {$project: {
+      _id: 0,
+      name: 1,
+      founded_year: 1
+    } }
+  ])
+  ```
+  Above we are calling the `aggregate` method, and it's accepting a pipeline.
+  A pipeline is an array with documents as elements. Our stages in this example
+  are $match, and $project. Match filters the documents, and project reshapes
+  the documents.
+  
+  * **Limit**: limit the number of documents you recieve back
+  ```
+  db.companies.aggregate([
+    {$match: { founded_year: 2004 }},
+    {$limit: 5},
+    {$project: {
+      _id: 0,
+      name: 1,
+      founded_year: 1
+    } }
+  ])
+  ```
+  **ALWAYS BE THINKING ABOUT THE EFFICIENCY OF YOUR PIPELINE**
+  
+  * **Sort**: How you would like to sort your documents.
+  ```
+  db.companies.aggregate([
+    {$match: { founded_year: 2004 }},
+    {$limit: 5},
+    {$sort: {name: 1}},
+    {$project: {
+      _id: 0,
+      name: 1 } }
+  ])
+  ```
+  * **Skip**: include a skip stage to skip over a specified amount of documents.
+  ```
+  db.companies.aggregate([
+    {$match: {founded_year: 2004}},
+    {$sort: {name:1}},
+    {$skip: 10},
+    {$limit: 5},
+    {$project: {_id: 0, name: 1}},
+  ]);
+  ```
 ## Expressions Overview
 ## Reshapping Documents in $project Stages
 ## Introduction to $group
