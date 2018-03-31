@@ -56,6 +56,8 @@
   ])
   ```
   **ALWAYS BE THINKING ABOUT THE EFFICIENCY OF YOUR PIPELINE**
+  It's best to include the $match opperator as soon as possible in your aggregation query so that your
+  other stages won't have to process an excesive amount of documents.
   
   * **Sort**: How you would like to sort your documents.
   ```
@@ -87,6 +89,7 @@
   [resources](https://docs.mongodb.com/manual/meta/aggregation-quick-reference/)
 
 ## Reshapping Documents in $project Stages
+  **promoting nested fields**
   ```
   db.companies.aggregate([
     { $match: {"funding_rounds.investments.financial_org.permalink": "greylock" }},
@@ -100,6 +103,85 @@
     }
   ])
   ```
+  * the '$' in quotes represents a value, this query is asking the aggregation pipeline to 
+    provide us with the value of ipo valuation amount, as well as the funders, and ipo year.
+
+  * if you would like to reach deep down into nested documents, you can do that by chaining the
+    field names with a '.' You can see examples of that done in this query multiple times.
+
+  If you would like to, you can also create new nested documents through the project stage.
+  Example:
+  ```
+  db.companies.aggregate([
+    { $match: {"funding_rounds.investments.financial_org.permalink": "greylock"} },
+    { $project: {
+      _id: 0,
+      name: 1,
+      founded: {
+        year: "$founded_year",
+        month: "$founded_month",
+        day: "$founded day"
+      }
+    } }
+  ])
+  ```
+  In the above example we are aggregating the values of founded year, month and day to create a new
+  document called founded.
+
+## $unwind
+  unwind allows you to take a collection that has an array valued field, and unwind that field so that
+  each element within that array has an entire output document.
+
+  Example:
+  ```
+  { color: 'red',
+    food: 'pizza',
+    names: ['Bill', 'Kim', 'Rachel']
+  }
+
+  // preforming an $unwind on names would produce something like this:
+
+  { color: 'red',     { color: 'red',    { color: 'red', 
+    food: 'pizza',      food: 'pizza',     food: 'pizza',
+    names: 'Bill'       names: 'Kim'       names: 'Rachel'
+  }                   }                  }
+  ```
+  The number of outputted documents is dependant on the length of the array that you unwind on. This
+  example covered an array that had a length of three, therefore there were three outputted documents.
+
+## Array Expressions
+  Filter works on array field values and it is one Array Expression that's worth looking into. Here's an exaple:
+  ```
+  //filter syntax
+  new_collection_name: { $filter: {
+    input: <THE FIELD YOU WANT TO FILTER ON>,
+    as: <ALLIAS NAME>,
+    cond: <HOW YOU WOULD LIKE TO FILTER/ OPPERATION>
+  }}
+
+  db.companies.aggregate([
+    {$match: {"funding_rounds.permalink": "greylock} },
+    {$project: {
+      _id: 0,
+      name: 1,
+      rounds: { $filter: {
+        input: "$funding_rounds",
+        as: "round",
+        cond: { $gte: ["$$rounds.raised_amount", 10000000] } } }
+      } },
+    {$match: {"rounds.permakink": "greylock"}}
+    }}
+  ])
+  ```  
+  
+  double $$ signs are refferencing variables and values at the same time. 'round' is our allias name, and we want the 
+  value of round.raised amount.
+
+## Using accumulators in $project
+  In $project stages, you can use a certain subset of accumulators to calculate values based on arrays that you can
+  express within an individual in projecting, froma a single doc that passes throught the project stage.
+
 ## Introduction to $group
+      
 ## _id in $group Stages
 ## $group vs $project
