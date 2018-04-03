@@ -182,6 +182,42 @@
   express within an individual in projecting, froma a single doc that passes throught the project stage.
 
 ## Introduction to $group
-      
+  In a $group stage we can aggregate together values from multiple documents and preform some kind of aggregate opperation
+  on them.
+  ```
+  db.companies.aggregate([
+    { $group: {
+        _id: { founded_year: "$founded_year" },
+        average_number_of_employees: { $avg: "$number_of_employees" },
+    }},
+    { $sort: { average_number_of_employees: -1 } }
+  ])
+  ```
+  Now, in the $group stage the _id is what we 'group' on. It's how MongoDB organizes the documents that it sees.
+  In this example, the group stage will organize/ group on every document that has the same value for founded_year.
+  And our average_number_of_employees field, will take each of those groups and preform an average calculation based
+  on how many employees each of those companies had.
+
+```
+db.items.aggregate([
+  { $group: {
+      _id: "$category",
+      items_in_category: { $sum: 1}
+  } }
+])
+
+# next I want to grab a sum of the items in category and call that field 'All'
+
+db.items.aggregate([
+  { $group: {
+    _id: "$category",
+    num: { $sum: 1}
+  } },
+  { $sort: { _id: 1} }
+]);
+
+
+```
+
 ## _id in $group Stages
 ## $group vs $project
